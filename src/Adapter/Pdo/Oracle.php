@@ -18,22 +18,21 @@
   +------------------------------------------------------------------------+
 */
 
-namespace Phalcon\Db\Adapter\Pdo;
+namespace Phalcon\Incubator\Db\Adapter\Pdo;
 
-use Phalcon\Db;
+use Phalcon\Db\Adapter\Pdo\AbstractPdo;
 use Phalcon\Db\Column;
-use Phalcon\Db\RawValue;
-use Phalcon\Db\Adapter\Pdo;
 use Phalcon\Db\ColumnInterface;
-use Phalcon\Db\AdapterInterface;
+use Phalcon\Db\Enum;
+use Phalcon\Db\RawValue;
 
 /**
- * Phalcon\Db\Adapter\Pdo\Oracle
+ * Phalcon\Incubator\Db\Adapter\Pdo\Oracle
  *
  * Specific functions for the Oracle RDBMS.
  *
  * <code>
- * use Phalcon\Db\Adapter\Pdo\Oracle;
+ * use Phalcon\Incubator\Db\Adapter\Pdo\Oracle;
  *
  * $connection = new Oracle([
  *     'dbname'   => '//localhost/dbname',
@@ -42,27 +41,26 @@ use Phalcon\Db\AdapterInterface;
  * ]);
  * </code>
  *
- * @property \Phalcon\Db\Dialect\Oracle _dialect
- * @package Phalcon\Db\Adapter\Pdo
+ * @property \Phalcon\Incubator\Db\Dialect\Oracle dialect
+ * @package \Phalcon\IncubatorDb\Adapter\Pdo
  */
-class Oracle extends Pdo implements AdapterInterface
+class Oracle extends AbstractPdo
 {
-    // @codingStandardsIgnoreStart
-    protected $_type = 'oci';
-    protected $_dialectType = 'oracle';
-    // @codingStandardsIgnoreEnd
+    protected $type = 'oci';
+    protected $dialectType = 'oracle';
 
     /**
-     * This method is automatically called in \Phalcon\Db\Adapter\Pdo constructor.
+     * This method is automatically called in \Phalcon\Db\Adapter\AbstractPdo constructor.
      * Call it when you need to restore a database connection.
      *
-     * @param array $descriptor
+     * @param null|array $descriptor
+     *
      * @return bool
      */
-    public function connect(array $descriptor = null)
+    public function connect(array $descriptor = null): bool
     {
         if (empty($descriptor)) {
-            $descriptor = $this->_descriptor;
+            $descriptor = $this->descriptor;
         }
 
         $status = parent::connect($descriptor);
@@ -89,10 +87,11 @@ class Oracle extends Pdo implements AdapterInterface
      * </code>
      *
      * @param string $table
-     * @param string $schema
+     * @param null|string $schema
+     *
      * @return ColumnInterface[]
      */
-    public function describeColumns($table, $schema = null)
+    public function describeColumns(string $table, string $schema = null): array
     {
         $columns = [];
         $oldColumn = null;
@@ -108,84 +107,10 @@ class Oracle extends Pdo implements AdapterInterface
          * 7:default,
          * 8:position;
          */
-        $sql = $this->_dialect->describeColumns($table, $schema);
-        foreach ($this->fetchAll($sql, Db::FETCH_NUM) as $field) {
-            $definition      = ['bindType' => 2];
-            $columnSize      = $field[2];
-            $columnPrecision = $field[3];
-            $columnScale     = $field[4];
-            $columnType      = $field[1];
-
-            /**
-             * Check the column type to get the correct Phalcon type
-             */
-            while (true) {
-                if (false !== strpos($columnType, 'NUMBER')) {
-                    $definition['type']      = Column::TYPE_DECIMAL;
-                    $definition['isNumeric'] = true;
-                    $definition['size']      = $columnPrecision;
-                    $definition['scale']     = $columnScale;
-                    $definition['bindType']  = 32;
-                    break;
-                }
-
-                if (false !== strpos($columnType, 'INTEGER')) {
-                    $definition['type']      = Column::TYPE_INTEGER;
-                    $definition['isNumeric'] = true;
-                    $definition['size']      = $columnPrecision;
-                    $definition['bindType']  = 1;
-                    break;
-                }
-
-                if (false !== strpos($columnType, 'VARCHAR2')) {
-                    $definition['type']      = Column::TYPE_VARCHAR;
-                    $definition['size']      = $columnSize;
-                    break;
-                }
-
-                if (false !== strpos($columnType, 'FLOAT')) {
-                    $definition['type']      = Column::TYPE_FLOAT;
-                    $definition['isNumeric'] = true;
-                    $definition['size']      = $columnSize;
-                    $definition['scale']     = $columnScale;
-                    $definition['bindType']  = 32;
-                    break;
-                }
-
-                if (false !== strpos($columnType, 'TIMESTAMP')) {
-                    $definition['type'] = Column::TYPE_TIMESTAMP;
-                    break;
-                }
-
-                if (false !== strpos($columnType, 'DATE')) {
-                    $definition['type'] = Column::TYPE_DATE;
-                    break;
-                }
-
-                if (false !== strpos($columnType, 'RAW')) {
-                    $definition['type'] = Column::TYPE_TEXT;
-                    break;
-                }
-
-                if (false !== strpos($columnType, 'BLOB')) {
-                    $definition['type'] = Column::TYPE_TEXT;
-                    break;
-                }
-
-                if (false !== strpos($columnType, 'CLOB')) {
-                    $definition['type'] = Column::TYPE_TEXT;
-                    break;
-                }
-
-                if (false !== strpos($columnType, 'CHAR')) {
-                    $definition['type'] = Column::TYPE_CHAR;
-                    $definition['size'] = $columnSize;
-                    break;
-                }
-
-                $definition['type'] = Column::TYPE_TEXT;
-                break;
-            }
+        $sql = $this->dialect->describeColumns($table, $schema);
+        $fields = $this->fetchAll($sql, Enum::FETCH_NUM);
+        foreach ($fields as $field) {
+            $definition = $this->getColumnType(['bindType' => 2], $field[1], $field[2], $field[3], $field[4]);
 
             if (null === $oldColumn) {
                 $definition['first'] = true;
@@ -196,14 +121,14 @@ class Oracle extends Pdo implements AdapterInterface
             /**
              * Check if the field is primary key
              */
-            if ('P' == $field[6]) {
+            if ('P' === $field[6]) {
                 $definition['primary'] = true;
             }
 
             /**
              * Check if the column allows null values
              */
-            if ('N' == $field[5]) {
+            if ('N' === $field[5]) {
                 $definition['notNull'] = true;
             }
 
@@ -212,6 +137,94 @@ class Oracle extends Pdo implements AdapterInterface
         }
 
         return $columns;
+    }
+
+    /**
+     * Checks the column type to get the correct Phalcon type
+     */
+    protected function getColumnType(
+        array $definition,
+        string $columnType,
+        $columnSize,
+        $columnPrecision,
+        $columnScale
+    ): array {
+        if (false !== strpos($columnType, 'NUMBER')) {
+            $definition['type'] = Column::TYPE_DECIMAL;
+            $definition['isNumeric'] = true;
+            $definition['size'] = $columnPrecision;
+            $definition['scale'] = $columnScale;
+            $definition['bindType'] = 32;
+
+            return $definition;
+        }
+
+        if (false !== strpos($columnType, 'INTEGER')) {
+            $definition['type'] = Column::TYPE_INTEGER;
+            $definition['isNumeric'] = true;
+            $definition['size'] = $columnPrecision;
+            $definition['bindType'] = 1;
+
+            return $definition;
+        }
+
+        if (false !== strpos($columnType, 'VARCHAR2')) {
+            $definition['type'] = Column::TYPE_VARCHAR;
+            $definition['size'] = $columnSize;
+
+            return $definition;
+        }
+
+        if (false !== strpos($columnType, 'FLOAT')) {
+            $definition['type'] = Column::TYPE_FLOAT;
+            $definition['isNumeric'] = true;
+            $definition['size'] = $columnSize;
+            $definition['scale'] = $columnScale;
+            $definition['bindType'] = 32;
+
+            return $definition;
+        }
+
+        if (false !== strpos($columnType, 'TIMESTAMP')) {
+            $definition['type'] = Column::TYPE_TIMESTAMP;
+
+            return $definition;
+        }
+
+        if (false !== strpos($columnType, 'DATE')) {
+            $definition['type'] = Column::TYPE_DATE;
+
+            return $definition;
+        }
+
+        if (false !== strpos($columnType, 'RAW')) {
+            $definition['type'] = Column::TYPE_TEXT;
+
+            return $definition;
+        }
+
+        if (false !== strpos($columnType, 'BLOB')) {
+            $definition['type'] = Column::TYPE_TEXT;
+
+            return $definition;
+        }
+
+        if (false !== strpos($columnType, 'CLOB')) {
+            $definition['type'] = Column::TYPE_TEXT;
+
+            return $definition;
+        }
+
+        if (false !== strpos($columnType, 'CHAR')) {
+            $definition['type'] = Column::TYPE_CHAR;
+            $definition['size'] = $columnSize;
+
+            return $definition;
+        }
+
+        $definition['type'] = Column::TYPE_TEXT;
+
+        return $definition;
     }
 
     /**
@@ -230,13 +243,14 @@ class Oracle extends Pdo implements AdapterInterface
      * <code>
      *
      * @param string $sequenceName
+     *
      * @return int
      */
-    public function lastInsertId($sequenceName = null)
+    public function lastInsertId($sequenceName = null): int
     {
         $sequenceName = $sequenceName ?: 'id';
 
-        return $this->fetchAll('SELECT ' . $sequenceName . '.CURRVAL FROM dual', Db::FETCH_NUM)[0][0];
+        return $this->fetchAll('SELECT ' . $sequenceName . '.CURRVAL FROM dual', Enum::FETCH_NUM)[0][0];
     }
 
     /**
@@ -244,7 +258,7 @@ class Oracle extends Pdo implements AdapterInterface
      *
      * @return bool
      */
-    public function useExplicitIdValue()
+    public function useExplicitIdValue(): bool
     {
         return false;
     }
@@ -254,7 +268,7 @@ class Oracle extends Pdo implements AdapterInterface
      *
      * @return RawValue
      */
-    public function getDefaultIdValue()
+    public function getDefaultIdValue(): RawValue
     {
         return new RawValue('default');
     }
@@ -264,8 +278,13 @@ class Oracle extends Pdo implements AdapterInterface
      *
      * @return bool
      */
-    public function supportSequences()
+    public function supportSequences(): bool
     {
         return true;
+    }
+
+    protected function getDsnDefaults(): array
+    {
+        return [];
     }
 }

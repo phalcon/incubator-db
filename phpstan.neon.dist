@@ -1,0 +1,4 @@
+parameters:
+    bootstrap: %rootDir%/../../../vendor/autoload.php
+
+    reportUnmatchedIgnoredErrors: false
