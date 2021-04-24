@@ -18,7 +18,7 @@
   +------------------------------------------------------------------------+
 */
 
-namespace Phalcon\Db\Dialect;
+namespace Phalcon\Incubator\Db\Dialect;
 
 use Phalcon\Text;
 use Phalcon\Db\Column;
@@ -29,7 +29,7 @@ use Phalcon\Db\ColumnInterface;
 use Phalcon\Db\ReferenceInterface;
 
 /**
- * Phalcon\Db\Dialect\Oracle
+ * \Phalcon\Incubator\Db\Dialect\Oracle
  *
  * Generates database specific SQL for the Oracle RDBMS.
  *
@@ -45,13 +45,11 @@ use Phalcon\Db\ReferenceInterface;
  * ]);
  * </code>
  *
- * @package Phalcon\Db\Dialect
+ * @package \Phalcon\Incubator\Db\Dialect
  */
 class Oracle extends Dialect
 {
-    // @codingStandardsIgnoreStart
-    protected $_escapeChar = "";
-    // @codingStandardsIgnoreEnd
+    protected $escapeChar = "";
 
     /**
      * Returns a SQL modified with a LOCK IN SHARE MODE clause
@@ -59,7 +57,7 @@ class Oracle extends Dialect
      * @param string $sqlQuery
      * @return string
      */
-    public function sharedLock($sqlQuery)
+    public function sharedLock(string $sqlQuery): string
     {
         return $sqlQuery . ' LOCK IN SHARE MODE';
     }
@@ -71,12 +69,12 @@ class Oracle extends Dialect
      * @param mixed $number
      * @return string
      */
-    public function limit($sqlQuery, $number)
+    public function limit(string $sqlQuery, $number): string
     {
         $offset = 0;
 
         if (is_array($number)) {
-            $offset = $number[1] !=null? $number[1]:0;
+            $offset = $number[1] ?? 0;
             $limit = $number[0];
         } else {
             $limit = $number;
@@ -104,7 +102,7 @@ class Oracle extends Dialect
      *
      * @throws Exception
      */
-    public function getColumnDefinition(ColumnInterface $column)
+    public function getColumnDefinition(ColumnInterface $column): string
     {
         $type = $column->getType();
         $size = $column->getSize();
@@ -124,8 +122,6 @@ class Oracle extends Dialect
                 $columnSql = 'NUMBER(' . $size . ',' . $scale . ')';
                 break;
             case Column::TYPE_DATETIME:
-                $columnSql = 'TIMESTAMP';
-                break;
             case Column::TYPE_TIMESTAMP:
                 $columnSql = 'TIMESTAMP';
                 break;
@@ -159,7 +155,7 @@ class Oracle extends Dialect
      *
      * @throws Exception
      */
-    public function addColumn($tableName, $schemaName, ColumnInterface $column)
+    public function addColumn(string $tableName, string $schemaName, ColumnInterface $column): string
     {
         throw new Exception('Not implemented yet.');
     }
@@ -170,12 +166,13 @@ class Oracle extends Dialect
      * @param string $tableName
      * @param string $schemaName
      * @param ColumnInterface $column
-     * @param ColumnInterface|null $current
+     * @param null|ColumnInterface $currentColumn
+     *
      * @return string
      *
      * @throws Exception
      */
-    public function modifyColumn($tableName, $schemaName, ColumnInterface $column, ColumnInterface $current = null)
+    public function modifyColumn(string $tableName, string $schemaName, ColumnInterface $column, ColumnInterface $currentColumn = null): string
     {
         throw new Exception('Not implemented yet.');
     }
@@ -190,7 +187,7 @@ class Oracle extends Dialect
      *
      * @throws Exception
      */
-    public function dropColumn($tableName, $schemaName, $columnName)
+    public function dropColumn(string $tableName, string $schemaName, string $columnName): string
     {
         throw new Exception('Not implemented yet.');
     }
@@ -205,7 +202,7 @@ class Oracle extends Dialect
      *
      * @throws Exception
      */
-    public function addIndex($tableName, $schemaName, IndexInterface $index)
+    public function addIndex(string $tableName, string $schemaName, IndexInterface $index): string
     {
         throw new Exception('Not implemented yet.');
     }
@@ -220,7 +217,7 @@ class Oracle extends Dialect
      *
      * @throws Exception
      */
-    public function dropIndex($tableName, $schemaName, $indexName)
+    public function dropIndex(string $tableName, string $schemaName, string $indexName): string
     {
         throw new Exception('Not implemented yet.');
     }
@@ -235,7 +232,7 @@ class Oracle extends Dialect
      *
      * @throws Exception
      */
-    public function addPrimaryKey($tableName, $schemaName, IndexInterface $index)
+    public function addPrimaryKey(string $tableName, string $schemaName, IndexInterface $index): string
     {
         throw new Exception('Not implemented yet.');
     }
@@ -249,7 +246,7 @@ class Oracle extends Dialect
      *
      * @throws Exception
      */
-    public function dropPrimaryKey($tableName, $schemaName)
+    public function dropPrimaryKey(string $tableName, string $schemaName): string
     {
         throw new Exception('Not implemented yet.');
     }
@@ -264,7 +261,7 @@ class Oracle extends Dialect
      *
      * @throws Exception
      */
-    public function addForeignKey($tableName, $schemaName, ReferenceInterface $reference)
+    public function addForeignKey(string $tableName, string $schemaName, ReferenceInterface $reference): string
     {
         throw new Exception('Not implemented yet.');
     }
@@ -279,7 +276,7 @@ class Oracle extends Dialect
      *
      * @throws Exception
      */
-    public function dropForeignKey($tableName, $schemaName, $referenceName)
+    public function dropForeignKey(string $tableName, string $schemaName, string $referenceName): string
     {
         throw new Exception('Not implemented yet.');
     }
@@ -294,7 +291,7 @@ class Oracle extends Dialect
      *
      * @throws Exception
      */
-    public function createTable($tableName, $schemaName, array $definition)
+    public function createTable(string $tableName, string $schemaName, array $definition): string
     {
         throw new Exception('Not implemented yet.');
     }
@@ -307,9 +304,9 @@ class Oracle extends Dialect
      * @param bool $ifExists
      * @return string
      */
-    public function dropTable($tableName, $schemaName, $ifExists = true)
+    public function dropTable(string $tableName, string $schemaName, bool $ifExists = true): string
     {
-        $this->_escapeChar = '';
+        $this->escapeChar = '';
 
         $table = $this->prepareTable($tableName, $schemaName);
         $sql = sprintf(
@@ -325,7 +322,7 @@ class Oracle extends Dialect
             );
         }
 
-        $this->_escapeChar = "'";
+        $this->escapeChar = "'";
 
         return $sql;
     }
@@ -337,10 +334,11 @@ class Oracle extends Dialect
      * print_r($dialect->listTables('blog'));
      * </code>
      *
-     * @param string $schemaName
+     * @param null|string $schemaName
+     *
      * @return string
      */
-    public function listTables($schemaName = null)
+    public function listTables(string $schemaName = null): string
     {
         $baseQuery = /** @lang text */
             "SELECT TABLE_NAME, OWNER FROM ALL_TABLES %s ORDER BY OWNER, TABLE_NAME";
@@ -363,14 +361,15 @@ class Oracle extends Dialect
      * </code>
      *
      * @param string $tableName
-     * @param string $schemaName
+     * @param null|string $schemaName
+     *
      * @return string
      */
-    public function tableExists($tableName, $schemaName = null)
+    public function tableExists(string $tableName, string $schemaName = null): string
     {
 
-        $oldEscapeChar=$this->_escapeChar;
-        $this->_escapeChar = "'";
+        $oldEscapeChar=$this->escapeChar;
+        $this->escapeChar = "'";
         $tableName = $this->escape(Text::upper($tableName));
         $baseQuery = sprintf(
             /** @lang text */
@@ -383,7 +382,7 @@ class Oracle extends Dialect
 
             $baseQuery=sprintf("%s AND OWNER = %s", $baseQuery, Text::upper($schemaName));
         }
-        $this->_escapeChar = $oldEscapeChar;
+        $this->escapeChar = $oldEscapeChar;
 
         return $baseQuery;
     }
@@ -393,12 +392,13 @@ class Oracle extends Dialect
      *
      * @param string $viewName
      * @param array $definition
-     * @param string $schemaName
+     * @param null|string $schemaName
+     *
      * @return string
      *
      * @throws Exception
      */
-    public function createView($viewName, array $definition, $schemaName = null)
+    public function createView(string $viewName, array $definition, string $schemaName = null): string
     {
         if (!isset($definition['sql']) || empty($definition['sql'])) {
             throw new Exception("The index 'sql' is required in the definition array");
@@ -411,13 +411,14 @@ class Oracle extends Dialect
      * Generates SQL to drop a view.
      *
      * @param string $viewName
-     * @param string $schemaName
+     * @param null|string $schemaName
      * @param bool $ifExists
+     *
      * @return string
      */
-    public function dropView($viewName, $schemaName = null, $ifExists = true)
+    public function dropView(string $viewName, string $schemaName = null, bool $ifExists = true): string
     {
-        $this->_escapeChar = '';
+        $this->escapeChar = '';
 
         $view = Text::upper($this->prepareTable($viewName, $schemaName));
         $sql = sprintf(
@@ -442,11 +443,11 @@ class Oracle extends Dialect
      * Generates SQL checking for the existence of a schema.view
      *
      * @param string $viewName
-     * @param string $schemaName
+     * @param null|string $schemaName
      *
      * @return string
      */
-    public function viewExists($viewName, $schemaName = null)
+    public function viewExists(string $viewName, string $schemaName = null): string
     {
         $view = $this->prepareTable($viewName, $schemaName);
         $baseSql = sprintf(
@@ -456,7 +457,7 @@ class Oracle extends Dialect
         );
 
         if (!empty($schemaName)) {
-            $schemaName = $this->escapeSchema($schemaName, $this->_escapeChar);
+            $schemaName = $this->escapeSchema($schemaName, $this->escapeChar);
 
             $baseSql .= sprintf("AND OWNER = %s", Text::upper($schemaName));
         }
@@ -470,7 +471,7 @@ class Oracle extends Dialect
      * @param string $schemaName
      * @return string
      */
-    public function listViews($schemaName = null)
+    public function listViews($schemaName = null): string
     {
         $baseSql = /** @lang text */
             'SELECT VIEW_NAME FROM ALL_VIEWS';
@@ -488,13 +489,14 @@ class Oracle extends Dialect
      * Generates SQL to describe a table.
      *
      * @param string $table
-     * @param string $schema
+     * @param null|string $schema
+     *
      * @return string
      */
-    public function describeColumns($table, $schema = null)
+    public function describeColumns(string $table, string $schema = null): string
     {
-        $oldEscapeChar= $this->_escapeChar;
-        $this->_escapeChar = "'";
+        $oldEscapeChar= $this->escapeChar;
+        $this->escapeChar = "'";
         $table = $this->escape($table);
         $sql = 'SELECT TC.COLUMN_NAME, TC.DATA_TYPE, TC.DATA_LENGTH, TC.DATA_PRECISION, TC.DATA_SCALE, TC.NULLABLE, ' .
                'C.CONSTRAINT_TYPE, TC.DATA_DEFAULT, CC.POSITION FROM ALL_TAB_COLUMNS TC LEFT JOIN ' .
@@ -511,7 +513,7 @@ class Oracle extends Dialect
         } else {
             $queryBase=sprintf($sql, Text::upper($table), '');
         }
-        $this->_escapeChar = $oldEscapeChar;
+        $this->escapeChar = $oldEscapeChar;
         return $queryBase;
     }
 
@@ -519,10 +521,11 @@ class Oracle extends Dialect
      * Generates SQL to query indexes on a table.
      *
      * @param string $table
-     * @param string $schema
+     * @param null|string $schema
+     *
      * @return string
      */
-    public function describeIndexes($table, $schema = null)
+    public function describeIndexes(string $table, string $schema = null): string
     {
         $table = $this->escape($table);
         $sql = 'SELECT I.TABLE_NAME, 0 AS C0, I.INDEX_NAME, IC.COLUMN_POSITION, IC.COLUMN_NAME ' .
@@ -538,7 +541,7 @@ class Oracle extends Dialect
         return $sql;
     }
 
-    public function describeReferences($table, $schema = null)
+    public function describeReferences(string $table, string $schema = null): string
     {
         $table = $this->escape($table);
 
@@ -561,10 +564,11 @@ class Oracle extends Dialect
      * Generates the SQL to describe the table creation options.
      *
      * @param string $table
-     * @param string $schema
+     * @param null|string $schema
+     *
      * @return string
      */
-    public function tableOptions($table, $schema = null)
+    public function tableOptions(string $table, string $schema = null): string
     {
         return '';
     }
@@ -574,7 +578,7 @@ class Oracle extends Dialect
      *
      * @return bool
      */
-    public function supportsSavepoints()
+    public function supportsSavepoints(): bool
     {
         return false;
     }
@@ -584,7 +588,7 @@ class Oracle extends Dialect
      *
      * @return bool
      */
-    public function supportsReleaseSavepoints()
+    public function supportsReleaseSavepoints(): bool
     {
         return false;
     }
@@ -593,12 +597,13 @@ class Oracle extends Dialect
      * Prepares table for this RDBMS.
      *
      * @param string $table
-     * @param string $schema
-     * @param string $alias
-     * @param string $escapeChar
+     * @param null|string $schema
+     * @param null|string $alias
+     * @param null|string $escapeChar
+     *
      * @return string
      */
-    protected function prepareTable($table, $schema = null, $alias = null, $escapeChar = null)
+    protected function prepareTable(string $table, string $schema = null, string $alias = null, string $escapeChar = null): string
     {
         $table = $this->escape($table, $escapeChar);
 
