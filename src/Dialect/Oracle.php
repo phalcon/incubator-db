@@ -49,7 +49,7 @@ use Phalcon\Text;
  */
 class Oracle extends Dialect
 {
-    protected $escapeChar = "";
+    protected string $escapeChar = "";
 
     /**
      * Returns a SQL modified with a LOCK IN SHARE MODE clause
@@ -71,7 +71,7 @@ class Oracle extends Dialect
      *
      * @return string
      */
-    public function limit(string $sqlQuery, $number): string
+    public function limit(string $sqlQuery, mixed $number): string
     {
         $offset = 0;
 

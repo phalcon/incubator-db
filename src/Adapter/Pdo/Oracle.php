@@ -46,8 +46,8 @@ use Phalcon\Db\RawValue;
  */
 class Oracle extends AbstractPdo
 {
-    protected $type = 'oci';
-    protected $dialectType = 'oracle';
+    protected string $type = 'oci';
+    protected string $dialectType = 'oracle';
 
     /**
      * This method is automatically called in \Phalcon\Db\Adapter\AbstractPdo constructor.
@@ -242,7 +242,7 @@ class Oracle extends AbstractPdo
      * $id = $connection->lastInsertId();
      * <code>
      *
-     * @param string $sequenceName
+     * @param string|null $sequenceName
      *
      * @return int
      */
