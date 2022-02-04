@@ -425,7 +425,9 @@ class Oracle extends Dialect
             throw new Exception("The index 'sql' is required in the definition array");
         }
 
-        return 'CREATE VIEW ' . $upperCase->__invoke($this->prepareTable($viewName, $schemaName)) . ' AS ' . $definition['sql'];
+        return 'CREATE VIEW ' .
+                $upperCase->__invoke($this->prepareTable($viewName, $schemaName)) .
+               ' AS ' . $definition['sql'];
     }
 
     /**
@@ -580,7 +582,10 @@ class Oracle extends Dialect
 
         if (!empty($schema)) {
             $schema = $this->escapeSchema($schema);
-            $sql .= 'AND AC.OWNER = ' . $upperCase->__invoke($schema) . ' AND AC.TABLE_NAME = ' . $upperCase->__invoke($table);
+            $sql .= 'AND AC.OWNER = ' .
+                    $upperCase->__invoke($schema) .
+                    ' AND AC.TABLE_NAME = ' .
+                    $upperCase->__invoke($table);
         } else {
             $sql .= 'AND AC.TABLE_NAME = ' . $upperCase->__invoke($table);
         }
