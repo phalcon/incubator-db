@@ -26,7 +26,7 @@ use Phalcon\Db\Dialect;
 use Phalcon\Db\Exception;
 use Phalcon\Db\IndexInterface;
 use Phalcon\Db\ReferenceInterface;
-use Phalcon\Text;
+use Phalcon\Support\Helper\Str\Upper;
 
 /**
  * \Phalcon\Incubator\Db\Dialect\Oracle
@@ -49,7 +49,7 @@ use Phalcon\Text;
  */
 class Oracle extends Dialect
 {
-    protected string $escapeChar = "";
+    protected $escapeChar = "";
 
     /**
      * Returns a SQL modified with a LOCK IN SHARE MODE clause
@@ -358,12 +358,13 @@ class Oracle extends Dialect
      */
     public function listTables(string $schemaName = null): string
     {
+        $upperCase = new Upper();
         $baseQuery = /** @lang text */
             "SELECT TABLE_NAME, OWNER FROM ALL_TABLES %s ORDER BY OWNER, TABLE_NAME";
 
         if (!empty($schemaName)) {
             $schemaName = $this->escapeSchema($schemaName);
-            $whereQuery = sprintf(' WHERE OWNER = %s', Text::upper($schemaName));
+            $whereQuery = sprintf(' WHERE OWNER = %s', $upperCase->__invoke($schemaName));
 
             return sprintf($baseQuery, $whereQuery);
         }
@@ -386,9 +387,10 @@ class Oracle extends Dialect
      */
     public function tableExists(string $tableName, string $schemaName = null): string
     {
+        $upperCase = new Upper();
         $oldEscapeChar = $this->escapeChar;
         $this->escapeChar = "'";
-        $tableName = $this->escape(Text::upper($tableName));
+        $tableName = $this->escape($upperCase->__invoke($tableName));
         $baseQuery = sprintf(
         /** @lang text */
             "SELECT CASE WHEN COUNT(*) > 0 THEN 1 ELSE 0 END RET FROM ALL_TABLES WHERE TABLE_NAME = %s",
@@ -398,7 +400,7 @@ class Oracle extends Dialect
         if (!empty($schemaName)) {
             $schemaName = $this->escapeSchema($schemaName);
 
-            $baseQuery = sprintf("%s AND OWNER = %s", $baseQuery, Text::upper($schemaName));
+            $baseQuery = sprintf("%s AND OWNER = %s", $baseQuery, $upperCase->__invoke($schemaName));
         }
         $this->escapeChar = $oldEscapeChar;
 
@@ -418,11 +420,12 @@ class Oracle extends Dialect
      */
     public function createView(string $viewName, array $definition, string $schemaName = null): string
     {
+        $upperCase = new Upper();
         if (!isset($definition['sql']) || empty($definition['sql'])) {
             throw new Exception("The index 'sql' is required in the definition array");
         }
 
-        return 'CREATE VIEW ' . Text::upper($this->prepareTable($viewName, $schemaName)) . ' AS ' . $definition['sql'];
+        return 'CREATE VIEW ' . $upperCase->__invoke($this->prepareTable($viewName, $schemaName)) . ' AS ' . $definition['sql'];
     }
 
     /**
@@ -436,9 +439,10 @@ class Oracle extends Dialect
      */
     public function dropView(string $viewName, string $schemaName = null, bool $ifExists = true): string
     {
+        $upperCase = new Upper();
         $this->escapeChar = '';
 
-        $view = Text::upper($this->prepareTable($viewName, $schemaName));
+        $view = $upperCase->__invoke($this->prepareTable($viewName, $schemaName));
         $sql = sprintf(
         /** @lang text */
             'DROP VIEW %s',
@@ -467,17 +471,18 @@ class Oracle extends Dialect
      */
     public function viewExists(string $viewName, string $schemaName = null): string
     {
+        $upperCase = new Upper();
         $view = $this->prepareTable($viewName, $schemaName);
         $baseSql = sprintf(
         /** @lang text */
             "SELECT CASE WHEN COUNT(*) > 0 THEN 1 ELSE 0 END RET FROM ALL_VIEWS WHERE VIEW_NAME = %s",
-            Text::upper($view)
+            $upperCase->__invoke($view)
         );
 
         if (!empty($schemaName)) {
             $schemaName = $this->escapeSchema($schemaName, $this->escapeChar);
 
-            $baseSql .= sprintf("AND OWNER = %s", Text::upper($schemaName));
+            $baseSql .= sprintf("AND OWNER = %s", $upperCase->__invoke($schemaName));
         }
 
         return $baseSql;
@@ -492,13 +497,14 @@ class Oracle extends Dialect
      */
     public function listViews($schemaName = null): string
     {
+        $upperCase = new Upper();
         $baseSql = /** @lang text */
             'SELECT VIEW_NAME FROM ALL_VIEWS';
 
         if (!empty($schemaName)) {
             $schemaName = $this->escapeSchema($schemaName);
 
-            $baseSql .= sprintf(" WHERE OWNER = %s", Text::upper($schemaName));
+            $baseSql .= sprintf(" WHERE OWNER = %s", $upperCase->__invoke($schemaName));
         }
 
         return $baseSql . ' ORDER BY VIEW_NAME';
@@ -514,6 +520,7 @@ class Oracle extends Dialect
      */
     public function describeColumns(string $table, string $schema = null): string
     {
+        $upperCase = new Upper();
         $oldEscapeChar = $this->escapeChar;
         $this->escapeChar = "'";
         $table = $this->escape($table);
@@ -527,9 +534,9 @@ class Oracle extends Dialect
         if (!empty($schema)) {
             $schema = $this->escapeSchema($schema);
 
-            $queryBase = sprintf($sql, Text::upper($table), 'AND TC.OWNER = ' . Text::upper($schema));
+            $queryBase = sprintf($sql, $upperCase->__invoke($table), 'AND TC.OWNER = ' . $upperCase->__invoke($schema));
         } else {
-            $queryBase = sprintf($sql, Text::upper($table), '');
+            $queryBase = sprintf($sql, $upperCase->__invoke($table), '');
         }
         $this->escapeChar = $oldEscapeChar;
 
@@ -546,15 +553,16 @@ class Oracle extends Dialect
      */
     public function describeIndexes(string $table, string $schema = null): string
     {
+        $upperCase = new Upper();
         $table = $this->escape($table);
         $sql = 'SELECT I.TABLE_NAME, 0 AS C0, I.INDEX_NAME, IC.COLUMN_POSITION, IC.COLUMN_NAME ' .
             'FROM ALL_INDEXES I JOIN ALL_IND_COLUMNS IC ON I.INDEX_NAME = IC.INDEX_NAME WHERE  I.TABLE_NAME = ' .
-            Text::upper($table);
+            $upperCase->__invoke($table);
 
         if (!empty($schema)) {
             $schema = $this->escapeSchema($schema);
 
-            $sql .= ' AND IC.INDEX_OWNER = %s' . Text::upper($schema);
+            $sql .= ' AND IC.INDEX_OWNER = %s' . $upperCase->__invoke($schema);
         }
 
         return $sql;
@@ -562,6 +570,7 @@ class Oracle extends Dialect
 
     public function describeReferences(string $table, string $schema = null): string
     {
+        $upperCase = new Upper();
         $table = $this->escape($table);
 
         $sql = 'SELECT AC.TABLE_NAME, CC.COLUMN_NAME, AC.CONSTRAINT_NAME, AC.R_OWNER, RCC.TABLE_NAME R_TABLE_NAME, ' .
@@ -571,9 +580,9 @@ class Oracle extends Dialect
 
         if (!empty($schema)) {
             $schema = $this->escapeSchema($schema);
-            $sql .= 'AND AC.OWNER = ' . Text::upper($schema) . ' AND AC.TABLE_NAME = ' . Text::upper($table);
+            $sql .= 'AND AC.OWNER = ' . $upperCase->__invoke($schema) . ' AND AC.TABLE_NAME = ' . $upperCase->__invoke($table);
         } else {
-            $sql .= 'AND AC.TABLE_NAME = ' . Text::upper($table);
+            $sql .= 'AND AC.TABLE_NAME = ' . $upperCase->__invoke($table);
         }
 
         return $sql;

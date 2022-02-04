@@ -46,38 +46,8 @@ use Phalcon\Db\RawValue;
  */
 class Oracle extends AbstractPdo
 {
-    protected string $type = 'oci';
-    protected string $dialectType = 'oracle';
-
-    /**
-     * This method is automatically called in \Phalcon\Db\Adapter\AbstractPdo constructor.
-     * Call it when you need to restore a database connection.
-     *
-     * @param null|array $descriptor
-     *
-     * @return bool
-     */
-    public function connect(array $descriptor = null): bool
-    {
-        if (empty($descriptor)) {
-            $descriptor = $this->descriptor;
-        }
-
-        $status = parent::connect($descriptor);
-
-        if (isset($descriptor['startup']) && $descriptor['startup']) {
-            $startup = $descriptor['startup'];
-            if (!is_array($startup)) {
-                $startup = [$startup];
-            }
-
-            foreach ($startup as $value) {
-                $this->execute($value);
-            }
-        }
-
-        return $status;
-    }
+    protected $type = 'oci';
+    protected $dialectType = 'oracle';
 
     /**
      * Returns an array of \Phalcon\Db\Column objects describing a table.
