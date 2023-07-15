@@ -33,7 +33,6 @@ use Phalcon\Db\RawValue;
  * </code>
  *
  * @property \Phalcon\Incubator\Db\Dialect\Oracle $dialect
- * @package \Phalcon\IncubatorDb\Adapter\Pdo
  */
 class Oracle extends AbstractPdo
 {
